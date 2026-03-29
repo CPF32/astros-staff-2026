@@ -1,0 +1,58 @@
+{
+  // Global VS Code settings
+  "files.autoSave": "onFocusChange",
+  "editor.formatOnSave": true,
+  "editor.tabSize": 2,
+  "editor.insertSpaces": true,
+  "workbench.editor.enablePreview": false,
+  
+  // Files to exclude from explorer
+  "files.exclude": {
+    "**/__pycache__": true,
+    "**/*.pyc": true,
+    "**/node_modules": true,
+    "**/.pytest_cache": true,
+    "**/build": true,
+    "**/.DS_Store": true
+  },
+  
+  // Search exclusions
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/__pycache__": true,
+    "**/venv": true,
+    "**/.venv": true,
+    "**/build": true,
+    "**/.pytest_cache": true,
+    "**/package-lock.json": true
+  },
+  
+  // Git
+  "git.confirmSync": false,
+  "git.autofetch": true,
+  
+  // Terminal
+  "terminal.integrated.defaultProfile.linux": "bash",
+  "terminal.integrated.scrollback": 10000,
+
+  // Python settings
+  "python.defaultInterpreterPath": "${workspaceFolder}/backend/.venv/bin/python",
+  "python.analysis.extraPaths": [
+    "${workspaceFolder}/backend"
+  ],
+  "python.analysis.autoSearchPaths": true,
+  "python.analysis.diagnosticMode": "workspace",
+  "python.languageServer": "Pylance",
+  "python.terminal.activateEnvironment": true,
+  "[python]": {
+    "editor.tabSize": 4,
+    "editor.insertSpaces": true,
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": "explicit"
+    }
+  },
+
+  // TypeScript settings
+  "typescript.tsdk": "${workspaceFolder}/frontend/node_modules/typescript/lib"
+}
