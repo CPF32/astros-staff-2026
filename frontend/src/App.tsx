@@ -1,15 +1,29 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import "./App.css";
-import { Player, PlayerFilterOptions } from "./types";
+import {
+  Player,
+  PlayerFilterOptions,
+  Pitch,
+  PitchFilterOptions,
+} from "./types";
+
 import PlayerFilterControls from "./components/PlayerFilterControls";
 import PlayerTable from "./components/PlayerTable";
+import PitchFilterControls from "./components/PitchFilterControls";
+import PitchTable from "./components/PitchTable";
+
 import ApiService from "./services/api";
 
 const App: React.FC = () => {
   const [allPlayers, setAllPlayers] = useState<Player[]>([]);
   const [players, setPlayers] = useState<Player[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string>("");
+  const [pitches, setPitches] = useState<Pitch[]>([]);
+
+  const [playersLoading, setPlayersLoading] = useState(false);
+  const [pitchesLoading, setPitchesLoading] = useState(false);
+  
+  const [playersError, setPlayersError] = useState<string>("");
+  const [pitchesError, setPitchesError] = useState<string>("");
 
   const availableTeams = useMemo(() => {
     const s = new Set<string>();
@@ -28,8 +42,8 @@ const App: React.FC = () => {
   }, [allPlayers]);
 
   const loadPlayers = useCallback(async (filters: PlayerFilterOptions) => {
-    setIsLoading(true);
-    setError("");
+    setPlayersLoading(true);
+    setPlayersError("");
 
     try {
       const data = await ApiService.getPlayers(filters);
@@ -37,23 +51,24 @@ const App: React.FC = () => {
 
     } 
     catch (e) {
-      setError(e instanceof Error ? e.message : "Failed to load players");
-      setPlayers([]);
+      setPlayersError(
+        e instanceof Error ? e.message : "Failed to load players"
+      );
 
+      setPlayers([]);
     } 
     finally {
-      setIsLoading(false);
-
+      setPlayersLoading(false);
     }
-
+    
   }, []);
 
   useEffect(() => {
     let cancelled = false;
     
     (async () => {
-      setIsLoading(true);
-      setError("");
+      setPlayersLoading(true);
+      setPlayersError("");
 
       try {
         const data = await ApiService.getPlayers();
@@ -62,14 +77,18 @@ const App: React.FC = () => {
           setAllPlayers(data);
           setPlayers(data);
         }
+      
       } 
       catch (e) {
         if (!cancelled) {
-          setError(e instanceof Error ? e.message : "Failed to load players");
+          setPlayersError(
+            e instanceof Error ? e.message : "Failed to load players"
+          );
         }
+
       } 
       finally {
-        if (!cancelled) setIsLoading(false);
+        if (!cancelled) setPlayersLoading(false);
       }
 
     })();
@@ -80,8 +99,26 @@ const App: React.FC = () => {
 
   }, []);
 
-  const handleFilterChange = (filters: PlayerFilterOptions) => {
+  const handlePlayerFilterChange = (filters: PlayerFilterOptions) => {
     void loadPlayers(filters);
+  };
+
+  const handlePitchSearch = async (filters: PitchFilterOptions) => {
+    setPitchesLoading(true);
+    setPitchesError("");
+
+    try {
+      const data = await ApiService.getPitches(filters);
+      setPitches(data);
+    } 
+    catch (e) {
+      setPitchesError(e instanceof Error ? e.message : "Failed to load pitches");
+      setPitches([]);
+    } 
+    finally {
+      setPitchesLoading(false);
+    }
+    
   };
 
   return (
@@ -94,7 +131,7 @@ const App: React.FC = () => {
       <main>
         <section className="filter-section">
           <PlayerFilterControls
-            onFilterChange={handleFilterChange}
+            onFilterChange={handlePlayerFilterChange}
             availableTeams={availableTeams}
             availablePositions={availablePositions}
           />
@@ -103,13 +140,22 @@ const App: React.FC = () => {
         <section className="data-section">
           <PlayerTable
             players={players}
-            isLoading={isLoading}
-            error={error}
+            isLoading={playersLoading}
+            error={playersError}
           />
         </section>
 
-        {/* TODO: Pitch Filter Controls}
-        {/* TODO: Implement pitches table */}
+        <section className="filter-section">
+          <PitchFilterControls onSearch={handlePitchSearch} />
+        </section>
+
+        <section className="data-section">
+          <PitchTable
+            pitches={pitches}
+            isLoading={pitchesLoading}
+            error={pitchesError}
+          />
+        </section>
       </main>
 
       <footer>
