@@ -47,10 +47,29 @@ export interface Pitch {
 export interface PlayerFilterOptions {
   team?: string;
   position?: string;
+  name?: string;
+  throws?: string;
+  bats?: string;
 }
 
 export interface PitchFilterOptions {
   pitcher?: number;
   batter?: number;
+  game_date?: string;
+  pitch_type?: string;
   min_speed?: number;
+  max_speed?: number;
+  min_release_pos_x?: number;
+  max_release_pos_x?: number;
+  min_release_pos_z?: number;
+  max_release_pos_z?: number;
+  min_spin_rate?: number;
+  max_spin_rate?: number;
+}
+
+export interface ApiMetrics {
+  requests_total: number;
+  endpoint_counts: Record<string, number>;
+  status_counts: Record<string, number>;
+  last_request_ms: number;
 }

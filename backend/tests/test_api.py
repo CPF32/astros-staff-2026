@@ -1,14 +1,12 @@
-import pytest
 import os
-import sys
 
-from main import app, db, Player, Pitch
+import pytest
+
+from main import app
 
 
 @pytest.fixture
 def client():
-    """Create a test client for the Flask application."""
-
     app.config["TESTING"] = True
     baseball_db_path = os.path.join(os.path.dirname(__file__), "..", "data", "baseball.db")
     app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{baseball_db_path}"
@@ -19,17 +17,25 @@ def client():
 
 
 class TestHealthCheck:
-    """Test the health check endpoint."""
-
     def test_health_check(self, client):
         res = client.get("/api/health")
         assert res.status_code == 200
         assert res.get_json() == {"status": "healthy"}
 
 
-class TestPlayerAPI:
-    """Test player-related API endpoints."""
+class TestMetricsAPI:
+    def test_metrics_endpoint(self, client):
+        client.get("/api/health")
+        res = client.get("/api/metrics")
+        assert res.status_code == 200
+        data = res.get_json()
+        assert isinstance(data["requests_total"], int)
+        assert isinstance(data["endpoint_counts"], dict)
+        assert isinstance(data["status_counts"], dict)
+        assert "last_request_ms" in data
 
+
+class TestPlayerAPI:
     def test_get_all_players(self, client):
         res = client.get("/api/players")
         assert res.status_code == 200
@@ -92,10 +98,30 @@ class TestPitchAPI:
     def test_get_pitches_min_speed(self, client):
         res = client.get("/api/pitches", query_string={"min_speed": 95})
         assert res.status_code == 200
-        
+
         data = res.get_json()
         assert isinstance(data, list)
-        
+
         for p in data:
             speed = p.get("release_speed")
             assert speed is not None and float(speed) >= 95.0
+
+    def test_get_pitches_by_game_date_and_pitch_type(self, client):
+        res = client.get("/api/pitches", query_string={"game_date": "2025-11-01", "pitch_type": "SL"})
+        assert res.status_code == 200
+
+        data = res.get_json()
+        assert isinstance(data, list)
+        assert all(p["game_date"] == "2025-11-01" for p in data)
+        assert all(p["pitch_type"] == "SL" for p in data)
+
+    def test_get_pitches_max_speed(self, client):
+        res = client.get("/api/pitches", query_string={"max_speed": 90})
+        assert res.status_code == 200
+
+        data = res.get_json()
+        assert isinstance(data, list)
+        for p in data:
+            speed = p.get("release_speed")
+            if speed is not None and speed != "":
+                assert float(speed) <= 90.0

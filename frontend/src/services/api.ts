@@ -1,5 +1,6 @@
 import axios, { AxiosError, isAxiosError } from "axios";
 import {
+  ApiMetrics,
   Player,
   PlayerFilterOptions,
   Pitch,
@@ -11,7 +12,7 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || "/api";
 function messageFromAxiosError(error: AxiosError): string {
   if (error.response) {
     const { status, statusText, data } = error.response;
-    
+
     if (data != null && typeof data === "object" && !Array.isArray(data)) {
       const err = (data as Record<string, unknown>).error;
       if (typeof err === "string" && err.length > 0) return err;
@@ -21,7 +22,7 @@ function messageFromAxiosError(error: AxiosError): string {
     }
 
     if (typeof data === "string" && data.length > 0) return data;
-    
+
     const tail = statusText ? ` ${statusText}` : "";
     return `${status}${tail}`.trim() || "Request failed";
   }
@@ -62,10 +63,12 @@ api.interceptors.response.use(
 
 export class ApiService {
   static async getPlayers(filters?: PlayerFilterOptions): Promise<Player[]> {
-    const { data } = await api.get<Player[]>("/players", {
-      params: filters,
-    });
+    const params = {
+      team: filters?.team,
+      position: filters?.position,
+    };
 
+    const { data } = await api.get<Player[]>("/players", { params });
     return data;
   }
 
@@ -73,13 +76,16 @@ export class ApiService {
     const { data } = await api.get<Pitch[]>("/pitches", {
       params: filters,
     });
+    return data;
+  }
 
+  static async getMetrics(): Promise<ApiMetrics> {
+    const { data } = await api.get<ApiMetrics>("/metrics");
     return data;
   }
 
   static async healthCheck(): Promise<{ status: string }> {
     const { data } = await api.get<{ status: string }>("/health");
-    
     return data;
   }
 }
