@@ -11,7 +11,7 @@ const App: React.FC = () => {
   const [availableTeams, setAvailableTeams] = useState<string[]>([]);
   const [availablePositions, setAvailablePositions] = useState<string[]>([]);
 
-  const handleFilterChange = (filters: PlayerFilterOptions) => {};
+  const handleFilterChange = (_filters: PlayerFilterOptions) => {};
 
   return (
     <div className="App">

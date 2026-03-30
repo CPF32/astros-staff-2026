@@ -8,17 +8,17 @@ interface PlayerFilterControlsProps {
 }
 
 const PlayerFilterControls: React.FC<PlayerFilterControlsProps> = ({
-  onFilterChange,
-  availableTeams = [],
-  availablePositions = [],
+  onFilterChange: _onFilterChange,
+  availableTeams: _availableTeams = [],
+  availablePositions: _availablePositions = [],
 }) => {
-  const [filters, setFilters] = useState<PlayerFilterOptions>({});
+  const [filters, _setFilters] = useState<PlayerFilterOptions>({});
 
-  const handleTeamChange = (event: ChangeEvent<HTMLSelectElement>) => {
+  const handleTeamChange = (_event: ChangeEvent<HTMLSelectElement>) => {
     // TODO: Implement team filter change handler
   };
 
-  const handlePositionChange = (event: ChangeEvent<HTMLSelectElement>) => {
+  const handlePositionChange = (_event: ChangeEvent<HTMLSelectElement>) => {
     // TODO: Implement position filter change handler
   };
 

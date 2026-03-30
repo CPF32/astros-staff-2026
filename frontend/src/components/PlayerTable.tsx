@@ -49,7 +49,7 @@ const PlayerTable: React.FC<PlayerTableProps> = ({
             </tr>
           </thead>
           <tbody>
-            {players.map((player, index) => (
+            {players.map((_player, index) => (
               <tr key={index}>
                 <td>{/* player.name */}</td>
               </tr>

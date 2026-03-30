@@ -9,5 +9,6 @@ export interface Pitch {
 }
 
 export interface PlayerFilterOptions {
-  // TODO: Define filter options for player queries
+  team?: string;
+  position?: string;
 }

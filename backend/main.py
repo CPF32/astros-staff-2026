@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, Blueprint, jsonify
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 import os
@@ -20,6 +20,7 @@ app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{DB_PATH}"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db = SQLAlchemy(app)
+api_bp = Blueprint("api", __name__, url_prefix="/api")
 
 # Database Models
 class Player(db.Model):
@@ -94,34 +95,37 @@ class Pitch(db.Model):
     away_team = db.Column(db.String, nullable=True)
 
 
-# Routes
-@app.route("/health", methods=["GET"])
+@api_bp.route("/health", methods=["GET"])
 def health_check():
     """Health check endpoint."""
+
     return jsonify({"status": "healthy"}), 200
 
-# TODO: Implement the routes for players and pitches below, feel free to modify them as necessary and/or create additional routes and helpers as needed.
-@app.route("/players", methods=["GET"])
+
+@api_bp.route("/players", methods=["GET"])
 def get_players():
     """
     Get all players or filter by team/position.
     """
-    # TODO: Implement player retrieval with optional filtering
-    # Below is a simple example returning a subset of players
-    pitches = Player.query.limit(1000).all()
+
+    players_rows = Player.query.limit(1000).all()
     schema = PlayerSchema(many=True)
-    result = schema.dump(pitches)
+    result = schema.dump(players_rows)
+
     return jsonify(result), 200
 
-@app.route("/pitches", methods=["GET"])
+
+@api_bp.route("/pitches", methods=["GET"])
 def get_pitches():
     """
     Get all pitches or filter by various fields such as player, team, date, etc.
     """
-    # TODO: Implement pitch retrieval with optional filtering
-    # Below is a simple example returning a subset of pitches
+
     pitches = Pitch.query.limit(1000).all()
     schema = PitchSchema(many=True)
     result = schema.dump(pitches)
 
     return jsonify(result), 200
+
+
+app.register_blueprint(api_bp)
