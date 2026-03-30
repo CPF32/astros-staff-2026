@@ -26,6 +26,8 @@ class PlayerSchema(Schema):
 class PitchSchema(Schema):
     """Schema for pitch data validation and serialization."""
 
+    rowid = fields.Integer(allow_none=True)
+
     # Pitch identification
     pitch_type = fields.String(allow_none=True)
     game_date = fields.String(required=True)

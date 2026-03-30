@@ -120,12 +120,16 @@ def get_players():
 
     players_rows = q.all()
     schema = PlayerSchema(many=True)
-    
+
     return jsonify(schema.dump(players_rows)), 200
 
 
 @api_bp.route("/players/<int:player_id>", methods=["GET"])
 def get_player(player_id):
+    """
+    Get players by id
+    """
+    
     player = db.session.get(Player, player_id)
 
     if player is None:
@@ -140,11 +144,24 @@ def get_pitches():
     Get all pitches or filter by various fields such as player, team, date, etc.
     """
 
-    pitches = Pitch.query.limit(1000).all()
-    schema = PitchSchema(many=True)
-    result = schema.dump(pitches)
+    q = Pitch.query
+    pitcher_id = request.args.get("pitcher", type=int)
+    batter_id = request.args.get("batter", type=int)
+    min_speed = request.args.get("min_speed", type=float)
 
-    return jsonify(result), 200
+    if pitcher_id is not None:
+        q = q.filter(Pitch.pitcher == pitcher_id)
+
+    if batter_id is not None:
+        q = q.filter(Pitch.batter == batter_id)
+
+    if min_speed is not None:
+        q = q.filter(cast(Pitch.release_speed, Float) >= min_speed)
+
+    pitches = q.limit(10000).all()
+    schema = PitchSchema(many=True)
+    
+    return jsonify(schema.dump(pitches)), 200
 
 
 app.register_blueprint(api_bp)

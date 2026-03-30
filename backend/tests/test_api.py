@@ -69,3 +69,33 @@ class TestPlayerAPI:
     def test_get_nonexistent_player(self, client):
         res = client.get("/api/players/999999999")
         assert res.status_code == 404
+
+
+class TestPitchAPI:
+    def test_get_pitches_filtered_by_pitcher(self, client):
+        res = client.get("/api/pitches", query_string={"pitcher": 477132})
+        assert res.status_code == 200
+
+        data = res.get_json()
+        assert isinstance(data, list)
+        assert len(data) >= 1
+        assert all(p["pitcher"] == 477132 for p in data)
+
+    def test_get_pitches_filtered_by_batter(self, client):
+        res = client.get("/api/pitches", query_string={"batter": 500743})
+        assert res.status_code == 200
+
+        data = res.get_json()
+        assert len(data) >= 1
+        assert all(p["batter"] == 500743 for p in data)
+
+    def test_get_pitches_min_speed(self, client):
+        res = client.get("/api/pitches", query_string={"min_speed": 95})
+        assert res.status_code == 200
+        
+        data = res.get_json()
+        assert isinstance(data, list)
+        
+        for p in data:
+            speed = p.get("release_speed")
+            assert speed is not None and float(speed) >= 95.0
