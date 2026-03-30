@@ -14,16 +14,27 @@ const PlayerFilterControls: React.FC<PlayerFilterControlsProps> = ({
 }) => {
   const [filters, _setFilters] = useState<PlayerFilterOptions>({});
 
-  const handleTeamChange = (_event: ChangeEvent<HTMLSelectElement>) => {
-    // TODO: Implement team filter change handler
+  const emit = (next: PlayerFilterOptions) => {
+    _setFilters(next);
+    _onFilterChange(next);
+
   };
 
-  const handlePositionChange = (_event: ChangeEvent<HTMLSelectElement>) => {
-    // TODO: Implement position filter change handler
+  const handleTeamChange = (event: ChangeEvent<HTMLSelectElement>) => {
+    const team = event.target.value || undefined;
+    emit({ ...filters, team });
+
+  };
+
+  const handlePositionChange = (event: ChangeEvent<HTMLSelectElement>) => {
+    const position = event.target.value || undefined;
+    emit({ ...filters, position });
+
   };
 
   const clearFilters = () => {
-    // TODO: Implement clear filters functionality
+    emit({});
+    
   };
 
   return (
@@ -31,7 +42,6 @@ const PlayerFilterControls: React.FC<PlayerFilterControlsProps> = ({
       <h3>Filter Players</h3>
 
       <div className="filter-row">
-        {/* TODO: Team filter dropdown */}
         <div className="filter-group">
           <label htmlFor="team-filter">Team:</label>
           <select
@@ -40,11 +50,14 @@ const PlayerFilterControls: React.FC<PlayerFilterControlsProps> = ({
             onChange={handleTeamChange}
           >
             <option value="">All Teams</option>
-            {/* TODO: Render team options from availableTeams */}
+            {_availableTeams.map((t) => (
+              <option key={t} value={t}>
+                {t}
+              </option>
+            ))}
           </select>
         </div>
 
-        {/* TODO: Position filter dropdown */}
         <div className="filter-group">
           <label htmlFor="position-filter">Position:</label>
           <select
@@ -53,12 +66,15 @@ const PlayerFilterControls: React.FC<PlayerFilterControlsProps> = ({
             onChange={handlePositionChange}
           >
             <option value="">All Positions</option>
-            {/* TODO: Render position options from availablePositions */}
+            {_availablePositions.map((p) => (
+              <option key={p} value={p}>
+                {p}
+              </option>
+            ))}
           </select>
         </div>
 
-        {/* TODO: Clear filters button */}
-        <button onClick={clearFilters} className="clear-filters">
+        <button type="button" onClick={clearFilters} className="clear-filters">
           Clear Filters
         </button>
       </div>

@@ -1,17 +1,88 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import "./App.css";
 import { Player, PlayerFilterOptions } from "./types";
 import PlayerFilterControls from "./components/PlayerFilterControls";
 import PlayerTable from "./components/PlayerTable";
+import ApiService from "./services/api";
 
 const App: React.FC = () => {
+  const [allPlayers, setAllPlayers] = useState<Player[]>([]);
   const [players, setPlayers] = useState<Player[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string>("");
-  const [availableTeams, setAvailableTeams] = useState<string[]>([]);
-  const [availablePositions, setAvailablePositions] = useState<string[]>([]);
 
-  const handleFilterChange = (_filters: PlayerFilterOptions) => {};
+  const availableTeams = useMemo(() => {
+    const s = new Set<string>();
+    for (const p of allPlayers) s.add(p.team);
+
+    return Array.from(s).sort();
+
+  }, [allPlayers]);
+
+  const availablePositions = useMemo(() => {
+    const s = new Set<string>();
+    for (const p of allPlayers) s.add(p.primary_position);
+
+    return Array.from(s).sort();
+
+  }, [allPlayers]);
+
+  const loadPlayers = useCallback(async (filters: PlayerFilterOptions) => {
+    setIsLoading(true);
+    setError("");
+
+    try {
+      const data = await ApiService.getPlayers(filters);
+      setPlayers(data);
+
+    } 
+    catch (e) {
+      setError(e instanceof Error ? e.message : "Failed to load players");
+      setPlayers([]);
+
+    } 
+    finally {
+      setIsLoading(false);
+
+    }
+
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    
+    (async () => {
+      setIsLoading(true);
+      setError("");
+
+      try {
+        const data = await ApiService.getPlayers();
+
+        if (!cancelled) {
+          setAllPlayers(data);
+          setPlayers(data);
+        }
+      } 
+      catch (e) {
+        if (!cancelled) {
+          setError(e instanceof Error ? e.message : "Failed to load players");
+        }
+      } 
+      finally {
+        if (!cancelled) setIsLoading(false);
+      }
+
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+
+  }, []);
+
+  const handleFilterChange = (filters: PlayerFilterOptions) => {
+    void loadPlayers(filters);
+  };
 
   return (
     <div className="App">
@@ -21,7 +92,6 @@ const App: React.FC = () => {
       </header>
 
       <main>
-        {/* TODO: Player Filter controls */}
         <section className="filter-section">
           <PlayerFilterControls
             onFilterChange={handleFilterChange}
@@ -30,9 +100,12 @@ const App: React.FC = () => {
           />
         </section>
 
-        {/* TODO: Player data table */}
         <section className="data-section">
-          <PlayerTable players={players} isLoading={isLoading} error={error} />
+          <PlayerTable
+            players={players}
+            isLoading={isLoading}
+            error={error}
+          />
         </section>
 
         {/* TODO: Pitch Filter Controls}

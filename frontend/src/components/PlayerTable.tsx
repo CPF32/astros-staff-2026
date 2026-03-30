@@ -40,18 +40,27 @@ const PlayerTable: React.FC<PlayerTableProps> = ({
     <div className="player-table">
       <h2>Players ({players.length} players)</h2>
 
-      {/* TODO: Implement player table */}
       <div className="table-container">
         <table>
           <thead>
             <tr>
               <th>Name</th>
+              <th>Team</th>
+              <th>Position</th>
+              <th>Throws</th>
+              <th>Bats</th>
             </tr>
           </thead>
           <tbody>
-            {players.map((_player, index) => (
-              <tr key={index}>
-                <td>{/* player.name */}</td>
+            {players.map((player) => (
+              <tr key={player.player_id}>
+                <td>
+                  {player.first_name} {player.last_name}
+                </td>
+                <td>{player.team}</td>
+                <td>{player.primary_position}</td>
+                <td>{player.throws}</td>
+                <td>{player.bats}</td>
               </tr>
             ))}
           </tbody>
