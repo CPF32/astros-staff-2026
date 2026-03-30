@@ -9,11 +9,8 @@ from main import app, db, Player, Pitch
 def client():
     """Create a test client for the Flask application."""
 
-    # Point to the actual baseball database for now
     app.config["TESTING"] = True
-    baseball_db_path = os.path.join(
-        os.path.dirname(__file__), "..", "data", "baseball.db"
-    )
+    baseball_db_path = os.path.join(os.path.dirname(__file__), "..", "data", "baseball.db")
     app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{baseball_db_path}"
 
     with app.test_client() as client:
@@ -25,39 +22,50 @@ class TestHealthCheck:
     """Test the health check endpoint."""
 
     def test_health_check(self, client):
-        """Test that health check returns 200 status."""
-        # TODO: Implement health check test
-        pass
+        res = client.get("/api/health")
+        assert res.status_code == 200
+        assert res.get_json() == {"status": "healthy"}
 
 
 class TestPlayerAPI:
     """Test player-related API endpoints."""
 
     def test_get_all_players(self, client):
-        """Test getting all players."""
-        # TODO: Implement test for getting all players
-        # Steps:
-        # 1. Insert test data into database
-        # 2. Make GET request to /api/players
-        # 3. Assert correct response format and data
-        pass
+        res = client.get("/api/players")
+        assert res.status_code == 200
+
+        data = res.get_json()
+        assert isinstance(data, list)
+        assert len(data) >= 200
+        assert "player_id" in data[0]
+        assert "team" in data[0]
+        assert "primary_position" in data[0]
 
     def test_filter_players_by_team(self, client):
-        """Test filtering players by team."""
-        # TODO: Implement test for team filtering
-        pass
+        res = client.get("/api/players", query_string={"team": "LAD"})
+        assert res.status_code == 200
+
+        data = res.get_json()
+        assert len(data) >= 1
+        assert all(p["team"] == "LAD" for p in data)
 
     def test_filter_players_by_position(self, client):
-        """Test filtering players by position."""
-        # TODO: Implement test for position filtering
-        pass
+        res = client.get("/api/players", query_string={"position": "SS"})
+        assert res.status_code == 200
+
+        data = res.get_json()
+        assert len(data) >= 1
+        assert all(p["primary_position"] == "SS" for p in data)
 
     def test_get_player_by_id(self, client):
-        """Test getting a specific player by ID."""
-        # TODO: Implement test for single player retrieval
-        pass
+        res = client.get("/api/players/500743")
+        assert res.status_code == 200
+
+        data = res.get_json()
+        assert data["player_id"] == 500743
+        assert data["team"] == "LAD"
+        assert data["primary_position"] == "SS"
 
     def test_get_nonexistent_player(self, client):
-        """Test getting a player that doesn't exist."""
-        # TODO: Implement test for 404 response
-        pass
+        res = client.get("/api/players/999999999")
+        assert res.status_code == 404

@@ -1,4 +1,4 @@
-from flask import Flask, Blueprint, jsonify
+from flask import Flask, Blueprint, jsonify, request
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 import os
@@ -108,11 +108,30 @@ def get_players():
     Get all players or filter by team/position.
     """
 
-    players_rows = Player.query.limit(1000).all()
-    schema = PlayerSchema(many=True)
-    result = schema.dump(players_rows)
+    q = Player.query
+    team = request.args.get("team")
+    position = request.args.get("position")
 
-    return jsonify(result), 200
+    if team:
+        q = q.filter(Player.team == team)
+
+    if position:
+        q = q.filter(Player.primary_position == position)
+
+    players_rows = q.all()
+    schema = PlayerSchema(many=True)
+    
+    return jsonify(schema.dump(players_rows)), 200
+
+
+@api_bp.route("/players/<int:player_id>", methods=["GET"])
+def get_player(player_id):
+    player = db.session.get(Player, player_id)
+
+    if player is None:
+        return jsonify({"error": "Not found"}), 404
+
+    return jsonify(PlayerSchema().dump(player)), 200
 
 
 @api_bp.route("/pitches", methods=["GET"])
